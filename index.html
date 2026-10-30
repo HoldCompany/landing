@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HoldCo</title>
+<meta name="description" content="The future.">
+<meta name="theme-color" content="#070707">
+<link rel="canonical" href="https://holdco.com.br/">
+<!-- link previews (WhatsApp, iMessage, LinkedIn, Slack, X) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HoldCo">
+<meta property="og:url" content="https://holdco.com.br/">
+<meta property="og:title" content="The future.">
+<meta property="og:description" content="HoldCo">
+<meta property="og:image" content="https://holdco.com.br/og.png">
+<meta property="og:image:secure_url" content="https://holdco.com.br/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The future. A grid of one hundred years, starting in 2026.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The future.">
+<meta name="twitter:description" content="HoldCo">
+<meta name="twitter:image" content="https://holdco.com.br/og.png">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@200&family=Geist+Mono:wght@400&display=swap">
+<style>
+/* HoldCo. One screen: wordmark and São Paulo time on top, a 100-year grid (2026-2125)
+   filling the page as its background, "The future." set large across it. */
+:root {
+  --bg: #070707;
+  --fg: #f1f0ec;
+  --dim: #f1f0ec94;
+  --line: #f1f0ec24;
+  --accent: #d4864e;
+  --on-accent: #070707;
+  --sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font-family: var(--sans);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+.grain {
+  position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+  opacity: .07; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.page {
+  position: relative; z-index: 1; overflow-x: clip;
+  min-height: 100vh; min-height: 100dvh;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto auto;
+  row-gap: clamp(16px, 3vh, 32px);
+  padding-top: max(clamp(18px, 3vw, 36px), env(safe-area-inset-top, 0px));
+  padding-bottom: max(clamp(18px, 3vw, 36px), env(safe-area-inset-bottom, 0px));
+  padding-left: max(clamp(16px, 4vw, 56px), env(safe-area-inset-left, 0px));
+  padding-right: max(clamp(16px, 4vw, 56px), env(safe-area-inset-right, 0px));
+}
+.top, .foot {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 6px 24px; flex-wrap: wrap; position: relative; z-index: 3;
+}
+.top { align-items: center; }
+.mark { display: block; height: 30px; width: auto; }
+.top { grid-row: 1; }
+.foot { grid-row: 4; }
+.label {
+  font: 400 11px/1.4 var(--mono); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--dim); font-variant-numeric: tabular-nums;
+}
+.label strong { font-weight: 400; color: var(--fg); }
+.where { display: inline-flex; gap: 6px 16px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* the century */
+.fig { grid-row: 2 / 4; grid-column: 1; margin: 0; display: flex; min-height: min(320px, 70vh); position: relative; }
+.years {
+  flex: 1; display: grid; grid-template-rows: repeat(10, minmax(0, 1fr));
+  border-top: 1px solid var(--line); border-left: 1px solid var(--line);
+  cursor: pointer;
+  touch-action: manipulation;              /* no double-tap zoom delay on phones */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  position: relative; z-index: 1;
+}
+.years:focus { outline: none; }
+.years:focus-visible { outline: 1px solid var(--fg); outline-offset: 4px; }
+.yr-row { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); }
+.yr {
+  position: relative; overflow: hidden; min-height: 0;
+  border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  opacity: calc(1 - var(--i) * .0072);     /* the further into the century, the fainter */
+  transition: background-color .15s, opacity .3s;
+}
+.yr.sel { opacity: 1; }
+/* on arrival a light runs through all hundred years, then settles on now */
+.sweeping .yr { animation: sweepCell .9s ease-out both; animation-delay: calc(var(--i) * 16ms); }
+@keyframes sweepCell { 0% { background-color: transparent; } 25% { background-color: #d4864e66; } 100% { background-color: transparent; } }
+.yr::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  border: 1px solid transparent; transition: border-color .15s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .yr:hover { background: var(--line); opacity: 1; }
+  .yr:hover b { opacity: 1; }
+}
+.yr.sel { background: var(--line); }
+.yr.sel::after { border-color: var(--fg); }
+.yr b {
+  position: absolute; top: 7px; left: 8px; z-index: 1;
+  font: 400 10px/1 var(--mono); letter-spacing: .04em; color: var(--dim);
+  opacity: 0; transition: opacity .2s;
+}
+/* only the first year of each decade is printed; the rest appear when pointed at or picked */
+.yr-row .yr:first-child b, .yr.now b, .yr.sel b { opacity: 1; }
+.yr.sel b { color: var(--fg); }
+.yr i {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--accent);
+  transition: height 1.8s cubic-bezier(.2, .8, .2, 1) .4s;
+}
+.yr.past i { height: 100%; }
+.yr.now b, .yr.past b { color: var(--on-accent); }
+/* warm light radiating from the present year's square */
+.yr.now { z-index: 1; overflow: visible; }
+.yr.now::before {
+  content: ""; position: absolute; left: 50%; top: 50%; z-index: 3; pointer-events: none;
+  width: 700%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, #d4864e4d, #d4864e1a 38%, #d4864e08 70%, transparent);
+  mix-blend-mode: screen;
+}
+
+/* headline */
+.head {
+  grid-row: 3; grid-column: 1; margin: 0; align-self: end;
+  position: relative; z-index: 2; pointer-events: none;
+  font-family: var(--sans); font-weight: 200;
+  font-size: clamp(3.5rem, 19.5vw, 25rem);
+  letter-spacing: -.065em; line-height: .86;
+  padding-left: .04em; padding-bottom: .02em;
+  /* a ring of background around the letters, so grid lines stop short of them */
+  text-shadow:
+    .028em 0 0 var(--bg), -.028em 0 0 var(--bg), 0 .028em 0 var(--bg), 0 -.028em 0 var(--bg),
+    .02em .02em 0 var(--bg), -.02em -.02em 0 var(--bg), .02em -.02em 0 var(--bg), -.02em .02em 0 var(--bg);
+  animation: rise 1.5s cubic-bezier(.16, .8, .14, 1) both;
+}
+.head .w { display: inline-block; }
+.head .dot { color: var(--accent); }
+
+@keyframes rise { from { opacity: .2; filter: blur(14px); transform: translateY(.12em); } to { opacity: 1; filter: none; transform: none; } }
+
+@media (max-width: 760px) {
+  .yr b { top: 5px; left: 5px; font-size: 8px; }
+  .where { justify-content: flex-start; }
+  .mark { height: 24px; }
+}
+/* phones held upright: stack the words and set them as large as the width allows */
+@media (max-width: 760px) and (orientation: portrait) {
+  .head { font-size: 33vw; }
+  .head .w { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .head, .yr, .sweeping .yr { animation: none; }
+  .yr i { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<main class="page sweeping">
+  <header class="top">
+    <img class="mark" src="data:image/png;base64,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" alt="HoldCo" width="30" height="30">
+    <span class="label where">
+      <span><strong>São Paulo</strong>, Brazil</span>
+      <span data-clock="date"></span>
+    </span>
+  </header>
+
+  <figure class="fig">
+    <div class="years" id="years" tabindex="0" aria-describedby="readout" aria-label="One hundred squares, one for each year from 2026 to 2125. Tap or click a square, or use the arrow keys, to see its year.">
+        <div class="yr-row"><span class="yr" data-year="2026" style="--i:0"><b>2026</b><i></i></span><span class="yr" data-year="2027" style="--i:1"><b>2027</b><i></i></span><span class="yr" data-year="2028" style="--i:2"><b>2028</b><i></i></span><span class="yr" data-year="2029" style="--i:3"><b>2029</b><i></i></span><span class="yr" data-year="2030" style="--i:4"><b>2030</b><i></i></span><span class="yr" data-year="2031" style="--i:5"><b>2031</b><i></i></span><span class="yr" data-year="2032" style="--i:6"><b>2032</b><i></i></span><span class="yr" data-year="2033" style="--i:7"><b>2033</b><i></i></span><span class="yr" data-year="2034" style="--i:8"><b>2034</b><i></i></span><span class="yr" data-year="2035" style="--i:9"><b>2035</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2036" style="--i:10"><b>2036</b><i></i></span><span class="yr" data-year="2037" style="--i:11"><b>2037</b><i></i></span><span class="yr" data-year="2038" style="--i:12"><b>2038</b><i></i></span><span class="yr" data-year="2039" style="--i:13"><b>2039</b><i></i></span><span class="yr" data-year="2040" style="--i:14"><b>2040</b><i></i></span><span class="yr" data-year="2041" style="--i:15"><b>2041</b><i></i></span><span class="yr" data-year="2042" style="--i:16"><b>2042</b><i></i></span><span class="yr" data-year="2043" style="--i:17"><b>2043</b><i></i></span><span class="yr" data-year="2044" style="--i:18"><b>2044</b><i></i></span><span class="yr" data-year="2045" style="--i:19"><b>2045</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2046" style="--i:20"><b>2046</b><i></i></span><span class="yr" data-year="2047" style="--i:21"><b>2047</b><i></i></span><span class="yr" data-year="2048" style="--i:22"><b>2048</b><i></i></span><span class="yr" data-year="2049" style="--i:23"><b>2049</b><i></i></span><span class="yr" data-year="2050" style="--i:24"><b>2050</b><i></i></span><span class="yr" data-year="2051" style="--i:25"><b>2051</b><i></i></span><span class="yr" data-year="2052" style="--i:26"><b>2052</b><i></i></span><span class="yr" data-year="2053" style="--i:27"><b>2053</b><i></i></span><span class="yr" data-year="2054" style="--i:28"><b>2054</b><i></i></span><span class="yr" data-year="2055" style="--i:29"><b>2055</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2056" style="--i:30"><b>2056</b><i></i></span><span class="yr" data-year="2057" style="--i:31"><b>2057</b><i></i></span><span class="yr" data-year="2058" style="--i:32"><b>2058</b><i></i></span><span class="yr" data-year="2059" style="--i:33"><b>2059</b><i></i></span><span class="yr" data-year="2060" style="--i:34"><b>2060</b><i></i></span><span class="yr" data-year="2061" style="--i:35"><b>2061</b><i></i></span><span class="yr" data-year="2062" style="--i:36"><b>2062</b><i></i></span><span class="yr" data-year="2063" style="--i:37"><b>2063</b><i></i></span><span class="yr" data-year="2064" style="--i:38"><b>2064</b><i></i></span><span class="yr" data-year="2065" style="--i:39"><b>2065</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2066" style="--i:40"><b>2066</b><i></i></span><span class="yr" data-year="2067" style="--i:41"><b>2067</b><i></i></span><span class="yr" data-year="2068" style="--i:42"><b>2068</b><i></i></span><span class="yr" data-year="2069" style="--i:43"><b>2069</b><i></i></span><span class="yr" data-year="2070" style="--i:44"><b>2070</b><i></i></span><span class="yr" data-year="2071" style="--i:45"><b>2071</b><i></i></span><span class="yr" data-year="2072" style="--i:46"><b>2072</b><i></i></span><span class="yr" data-year="2073" style="--i:47"><b>2073</b><i></i></span><span class="yr" data-year="2074" style="--i:48"><b>2074</b><i></i></span><span class="yr" data-year="2075" style="--i:49"><b>2075</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2076" style="--i:50"><b>2076</b><i></i></span><span class="yr" data-year="2077" style="--i:51"><b>2077</b><i></i></span><span class="yr" data-year="2078" style="--i:52"><b>2078</b><i></i></span><span class="yr" data-year="2079" style="--i:53"><b>2079</b><i></i></span><span class="yr" data-year="2080" style="--i:54"><b>2080</b><i></i></span><span class="yr" data-year="2081" style="--i:55"><b>2081</b><i></i></span><span class="yr" data-year="2082" style="--i:56"><b>2082</b><i></i></span><span class="yr" data-year="2083" style="--i:57"><b>2083</b><i></i></span><span class="yr" data-year="2084" style="--i:58"><b>2084</b><i></i></span><span class="yr" data-year="2085" style="--i:59"><b>2085</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2086" style="--i:60"><b>2086</b><i></i></span><span class="yr" data-year="2087" style="--i:61"><b>2087</b><i></i></span><span class="yr" data-year="2088" style="--i:62"><b>2088</b><i></i></span><span class="yr" data-year="2089" style="--i:63"><b>2089</b><i></i></span><span class="yr" data-year="2090" style="--i:64"><b>2090</b><i></i></span><span class="yr" data-year="2091" style="--i:65"><b>2091</b><i></i></span><span class="yr" data-year="2092" style="--i:66"><b>2092</b><i></i></span><span class="yr" data-year="2093" style="--i:67"><b>2093</b><i></i></span><span class="yr" data-year="2094" style="--i:68"><b>2094</b><i></i></span><span class="yr" data-year="2095" style="--i:69"><b>2095</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2096" style="--i:70"><b>2096</b><i></i></span><span class="yr" data-year="2097" style="--i:71"><b>2097</b><i></i></span><span class="yr" data-year="2098" style="--i:72"><b>2098</b><i></i></span><span class="yr" data-year="2099" style="--i:73"><b>2099</b><i></i></span><span class="yr" data-year="2100" style="--i:74"><b>2100</b><i></i></span><span class="yr" data-year="2101" style="--i:75"><b>2101</b><i></i></span><span class="yr" data-year="2102" style="--i:76"><b>2102</b><i></i></span><span class="yr" data-year="2103" style="--i:77"><b>2103</b><i></i></span><span class="yr" data-year="2104" style="--i:78"><b>2104</b><i></i></span><span class="yr" data-year="2105" style="--i:79"><b>2105</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2106" style="--i:80"><b>2106</b><i></i></span><span class="yr" data-year="2107" style="--i:81"><b>2107</b><i></i></span><span class="yr" data-year="2108" style="--i:82"><b>2108</b><i></i></span><span class="yr" data-year="2109" style="--i:83"><b>2109</b><i></i></span><span class="yr" data-year="2110" style="--i:84"><b>2110</b><i></i></span><span class="yr" data-year="2111" style="--i:85"><b>2111</b><i></i></span><span class="yr" data-year="2112" style="--i:86"><b>2112</b><i></i></span><span class="yr" data-year="2113" style="--i:87"><b>2113</b><i></i></span><span class="yr" data-year="2114" style="--i:88"><b>2114</b><i></i></span><span class="yr" data-year="2115" style="--i:89"><b>2115</b><i></i></span></div>
+        <div class="yr-row"><span class="yr" data-year="2116" style="--i:90"><b>2116</b><i></i></span><span class="yr" data-year="2117" style="--i:91"><b>2117</b><i></i></span><span class="yr" data-year="2118" style="--i:92"><b>2118</b><i></i></span><span class="yr" data-year="2119" style="--i:93"><b>2119</b><i></i></span><span class="yr" data-year="2120" style="--i:94"><b>2120</b><i></i></span><span class="yr" data-year="2121" style="--i:95"><b>2121</b><i></i></span><span class="yr" data-year="2122" style="--i:96"><b>2122</b><i></i></span><span class="yr" data-year="2123" style="--i:97"><b>2123</b><i></i></span><span class="yr" data-year="2124" style="--i:98"><b>2124</b><i></i></span><span class="yr" data-year="2125" style="--i:99"><b>2125</b><i></i></span></div>
+    </div>
+  </figure>
+
+  <h1 class="head"><span class="w">The</span> <span class="w">future<span class="dot">.</span></span></h1>
+
+  <footer class="foot">
+    <span class="label" id="readout" aria-live="polite"><strong>Year 1</strong> of 100</span>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const TZ = 'America/Sao_Paulo';
+  const START = 2026;
+
+  /* today's date in São Paulo, written so it reads the same in every country: 29 OCT 2026 */
+  const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const fParts = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' });
+  const tick = () => {
+    const p = fParts.formatToParts(new Date());
+    const v = (t) => p.find((x) => x.type === t).value;
+    const text = v('day') + ' ' + MONTHS[+v('month') - 1] + ' ' + v('year');
+    document.querySelectorAll('[data-clock="date"]').forEach((el) => { el.textContent = text; });
+  };
+  tick(); setInterval(tick, 60000);
+
+  /* where we are in the century (São Paulo date, so every visitor sees the same square) */
+  const years = document.getElementById('years');
+  const readout = document.getElementById('readout');
+  const cells = Array.prototype.slice.call(years.querySelectorAll('.yr'));
+  let Y = START, base = '';
+  const updateCentury = (animate) => {
+    const p = fParts.formatToParts(new Date());
+    const get = (t) => +p.find((x) => x.type === t).value;
+    const y = get('year'), m = get('month'), d = get('day');
+    const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+    const progress = ((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 1)) / 864e5 + 1) / (leap ? 366 : 365);
+    Y = y;
+    base = '<strong>Year ' + Math.min(100, Math.max(1, y - START + 1)) + '</strong> of 100';
+    cells.forEach((cell) => {
+      const cy = +cell.dataset.year;
+      cell.classList.toggle('past', cy < y);
+      cell.classList.toggle('now', cy === y);
+      const fill = cell.querySelector('i');
+      if (cy === y) {
+        const h = (progress * 100).toFixed(1) + '%';
+        if (animate) requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.height = h; }));
+        else fill.style.height = h;
+      } else {
+        fill.style.height = '';
+      }
+    });
+  };
+
+  /* year readout: hover previews with a mouse; tap, click or arrow keys select */
+  let selected = -1, preview = -1;
+  const render = () => {
+    const i = preview >= 0 ? preview : selected;
+    readout.innerHTML = i < 0 ? base : '<strong>' + (START + i) + '</strong>&nbsp;&nbsp;Year ' + (i + 1) + ' of 100';
+    cells.forEach((c, k) => c.classList.toggle('sel', k === selected));
+  };
+  const indexOf = (t) => {
+    const c = t && t.closest ? t.closest('.yr') : null;
+    return c ? cells.indexOf(c) : -1;
+  };
+  years.addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const i = indexOf(e.target);
+    if (i >= 0 && i !== preview) { preview = i; render(); }
+  });
+  years.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    preview = -1; render();
+  });
+  years.addEventListener('click', (e) => {
+    const i = indexOf(e.target);
+    if (i < 0) return;
+    selected = selected === i ? -1 : i;
+    preview = -1; render();
+  });
+  document.addEventListener(window.PointerEvent ? 'pointerdown' : 'touchstart', (e) => {
+    if (selected >= 0 && !years.contains(e.target)) { selected = -1; preview = -1; render(); }
+  }, { passive: true });
+  years.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 10, ArrowUp: -10 }[e.key];
+    let i = selected;
+    if (step !== undefined) i = selected < 0 ? Math.min(99, Math.max(0, Y - START)) : Math.min(99, Math.max(0, selected + step));
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = 99;
+    else if (e.key === 'Escape') i = -1;
+    else return;
+    e.preventDefault();
+    selected = i; preview = -1; render();
+  });
+
+  updateCentury(true);
+  render();
+  setInterval(() => { updateCentury(false); render(); }, 60000);
+})();
+</script>
+</body>
+</html>
